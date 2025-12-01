@@ -191,25 +191,11 @@ export class SeedDataDiffer {
       existingItems.push(...batchItems);
     }
 
-    this.logger.debug({
-      collection: this.collection,
-      existingItemsCount: existingItems.length,
-      firstItem: existingItems[0],
-      firstItemKeys: existingItems[0] ? Object.keys(existingItems[0]) : [],
-    }, 'Query returned existing items (all batches combined)');
-
     const existingIds = new Set<DirectusId>();
     for (const item of existingItems) {
       const primaryKey = await this.getPrimaryKey(item);
 
-      // Debug: Log when primaryKey is undefined to understand the root cause
       if (primaryKey === undefined || primaryKey === null) {
-        this.logger.warn({
-          collection: this.collection,
-          primaryFieldName,
-          item,
-          itemKeys: Object.keys(item),
-        }, 'Primary key is undefined for item - this indicates a mismatch between expected and actual fields');
         throw new Error(
           `Primary key "${primaryFieldName}" is undefined for item in collection "${this.collection}". ` +
           `Item has fields: ${Object.keys(item).join(', ')}. ` +
