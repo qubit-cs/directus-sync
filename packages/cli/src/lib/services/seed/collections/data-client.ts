@@ -26,60 +26,19 @@ export class SeedDataClient {
    */
   async query<T extends DirectusUnknownType>(query: Query<T>): Promise<T[]> {
     const directus = await this.migrationClient.get();
-
-    // Debug: Log the query before sending
-    this.logger.debug({
-      collection: this.collection,
-      query: JSON.stringify(query).substring(0, 500),
-      filterKeys: query.filter ? Object.keys(query.filter) : [],
-      fields: query.fields,
-      limit: query.limit,
-    }, 'Executing query via Directus SDK');
-
-    let response;
-    try {
-      response = await directus.request<T | T[]>(
-        readMany(this.collection, query),
-      );
-    } catch (error) {
-      this.logger.error({
-        collection: this.collection,
-        error: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-      }, 'SDK request failed');
-      throw error;
-    }
-
-    this.logger.debug({
-      collection: this.collection,
-      responseType: typeof response,
-      isArray: Array.isArray(response),
-      responseIsNull: response === null,
-      responseIsUndefined: response === undefined,
-    }, 'Raw SDK response type check');
+    const response = await directus.request<T | T[]>(
+      readMany(this.collection, query),
+    );
 
     if (Array.isArray(response)) {
-      this.logger.debug({
-        collection: this.collection,
-        responseLength: response.length,
-        firstItemKeys: response[0] ? Object.keys(response[0]) : [],
-      }, 'SDK returned array response');
       return response;
     }
 
     // Some collections return a single object instead of an array
     if (!response || typeof response !== 'object') {
-      this.logger.debug({
-        collection: this.collection,
-        responseType: typeof response,
-      }, 'SDK returned non-object, returning empty array');
       return [];
     }
 
-    this.logger.debug({
-      collection: this.collection,
-      responseKeys: Object.keys(response),
-    }, 'SDK returned single object, wrapping in array');
     return [response];
   }
 

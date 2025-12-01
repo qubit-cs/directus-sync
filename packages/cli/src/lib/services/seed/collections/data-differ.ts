@@ -175,12 +175,6 @@ export class SeedDataDiffer {
     }
 
     const primaryFieldName = await this.getPrimaryFieldName();
-    this.logger.debug({
-      collection: this.collection,
-      primaryFieldName,
-      localIdsCount: localIds.length,
-      firstFewIds: localIds.slice(0, 3),
-    }, 'About to query for existing items to check for dangling IDs');
 
     // Batch queries to avoid issues with large _in filters
     // Query in chunks of 100 IDs to prevent SDK/API issues with large arrays
@@ -189,13 +183,6 @@ export class SeedDataDiffer {
 
     for (let i = 0; i < localIds.length; i += BATCH_SIZE) {
       const batch = localIds.slice(i, i + BATCH_SIZE);
-      this.logger.debug({
-        collection: this.collection,
-        batchIndex: Math.floor(i / BATCH_SIZE) + 1,
-        batchSize: batch.length,
-        totalBatches: Math.ceil(localIds.length / BATCH_SIZE),
-      }, 'Querying batch of IDs');
-
       const batchItems = await this.dataClient.queryByPrimaryField(batch, {
         limit: -1,
         fields: [primaryFieldName],
