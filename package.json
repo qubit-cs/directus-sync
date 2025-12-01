@@ -19,7 +19,6 @@
     "test": "lerna run test",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,gql,mjs}\"",
     "lint": "eslint --fix .",
-    "prepare": "husky install",
     "docs:start": "npm run start --workspace=website",
     "docs:build": "npm run build --workspace=website",
     "docs:serve": "npm run serve --workspace=website",

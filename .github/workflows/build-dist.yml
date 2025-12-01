@@ -1,0 +1,60 @@
+name: Build and Commit Dist
+
+on:
+  push:
+    branches:
+      - fix/large-id-query-batching
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install --legacy-peer-deps
+
+      - name: Install workspace dependencies
+        run: npm run bootstrap || true
+
+      - name: Build CLI package only
+        run: cd packages/cli && npm run build
+
+      - name: Create installable tarball
+        run: |
+          cd packages/cli
+          npm pack
+          mv *.tgz ../../directus-sync-cli.tgz
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.sha }}
+          name: Build ${{ github.sha }}
+          body: |
+            Automated build from commit ${{ github.sha }}
+
+            This release contains a pre-built tarball of directus-sync CLI with the batching fix.
+
+            Install with:
+            ```
+            npm install https://github.com/qubit-cs/directus-sync/releases/download/build-${{ github.sha }}/directus-sync-cli.tgz
+            ```
+          files: |
+            directus-sync-cli.tgz
+          draft: false
+          prerelease: true
