@@ -6,6 +6,11 @@
   "bin": {
     "directus-sync": "./bin/index.js"
   },
+  "files": [
+    "dist",
+    "bin",
+    "README.md"
+  ],
   "scripts": {
     "bin": "node ./bin/index.js",
     "build": "tsc",
